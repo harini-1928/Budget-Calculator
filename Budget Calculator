@@ -1,0 +1,90 @@
+import java.awt.*;
+import java.awt.event.*;
+import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
+public class BudgetCalculator extends Frame {
+    private DefaultTableModel tableModel;
+    private JTable table;
+    public BudgetCalculator() {
+        // Frame settings
+        setTitle("Budget Calculator");
+        setSize(600, 400);
+        setLayout(new BorderLayout());
+        setVisible(true);
+        // Table for budget items
+        tableModel = new DefaultTableModel(new String[]{"Item", "Amount"}, 0);
+        table = new JTable(tableModel);
+        add(new JScrollPane(table), BorderLayout.CENTER);
+        // Buttons for actions
+        Panel buttonPanel = new Panel();
+        Button addButton = new Button("Add");
+        Button editButton = new Button("Edit");
+        Button deleteButton = new Button("Delete");
+        Button summariseButton = new Button("Summarise");
+        buttonPanel.add(addButton);
+        buttonPanel.add(editButton);
+        buttonPanel.add(deleteButton);
+        buttonPanel.add(summariseButton);
+        add(buttonPanel, BorderLayout.SOUTH);
+        // Event Listeners
+        addButton.addActionListener(e -> addItem());
+        editButton.addActionListener(e -> editItem());
+        deleteButton.addActionListener(e -> deleteItem());
+        summariseButton.addActionListener(e -> summariseItems());
+
+        // Close the application
+        addWindowListener(new WindowAdapter() {
+            public void windowClosing(WindowEvent we) {
+                System.exit(0);
+            }
+        });
+    }
+    private void addItem() {
+        String item = JOptionPane.showInputDialog(this, "Enter Item:");
+        if (item == null || item.isEmpty()) return;
+        String amountStr = JOptionPane.showInputDialog(this, "Enter Amount:");
+        if (amountStr == null || amountStr.isEmpty()) return;
+        try {
+            double amount = Double.parseDouble(amountStr);
+            tableModel.addRow(new Object[]{item, amount});
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(this, "Invalid amount. Please enter a number.");
+        }
+    }
+    private void editItem() {
+        int selectedRow = table.getSelectedRow();
+        if (selectedRow == -1) {
+            JOptionPane.showMessageDialog(this, "Please select a row to edit.");
+            return;
+        }
+        String item = JOptionPane.showInputDialog(this, "Enter new Item:", tableModel.getValueAt(selectedRow, 0));
+        if (item == null || item.isEmpty()) return;
+        String amountStr = JOptionPane.showInputDialog(this, "Enter new Amount:", tableModel.getValueAt(selectedRow, 1));
+        if (amountStr == null || amountStr.isEmpty()) return;
+        try {
+            double amount = Double.parseDouble(amountStr);
+            tableModel.setValueAt(item, selectedRow, 0);
+            tableModel.setValueAt(amount, selectedRow, 1);
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(this, "Invalid amount. Please enter a number.");
+        }
+    }
+    private void deleteItem() {
+        int selectedRow = table.getSelectedRow();
+        if (selectedRow == -1) {
+            JOptionPane.showMessageDialog(this, "Please select a row to delete.");
+            return;
+        }
+        tableModel.removeRow(selectedRow);
+    }
+    private void summariseItems() {
+        double total = 0;
+        for (int i = 0; i < tableModel.getRowCount(); i++) {
+            total += (double) tableModel.getValueAt(i, 1);
+        }
+        JOptionPane.showMessageDialog(this, "Total Expenses: " + total);
+    }
+    public static void main(String[] args) {
+        new BudgetCalculator();
+    }
+}
